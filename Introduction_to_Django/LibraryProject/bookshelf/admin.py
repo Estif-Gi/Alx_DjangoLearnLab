@@ -7,3 +7,4 @@ admin.site.register(Book)
 
 admin.ModelAdmin
 list_filter = ('title', 'author', 'publication_year')
+search_fields = ('title', 'author')
