@@ -6,4 +6,4 @@ from .models import Book
 admin.site.register(Book)
 
 admin.ModelAdmin
-list_display = ('title', 'author', 'publication_year')
+list_filter = ('title', 'author', 'publication_year')
