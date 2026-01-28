@@ -36,6 +36,17 @@ class Book(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
 
+    class Meta:
+        permissions = [
+            ("can_view_book", "Can view book details"),
+            ("can_create_book", "Can create new book entries"),
+            ("can_edit_book", "Can edit existing books"),
+            ("can_delete_book", "Can delete books"),
+        ]
+
+    def __str__(self):
+        return f"{self.title} by {self.author} ({self.publication_year.year})"
+
 
 class CustomUser(AbstractUser):
     username = None
