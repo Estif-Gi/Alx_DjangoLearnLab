@@ -9,7 +9,7 @@ from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Book
-from .forms import BookForm, BookSearchForm
+from .forms import BookForm, BookSearchForm, ExampleForm
 
 # Function-based views with permission decorators
 
