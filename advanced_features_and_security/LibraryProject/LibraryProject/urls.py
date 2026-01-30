@@ -16,8 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    # Admin site
     path('admin/', admin.site.urls),
+    
+    # Bookshelf app
+    path('bookshelf/', include('bookshelf.urls')),
+    
+    # Relationship app
     path('relationship_app/', include('relationship_app.urls')),
+    
+    # Redirect root URL to book list
+    path('', RedirectView.as_view(url='/bookshelf/', permanent=True)),
 ]

@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -9,7 +9,8 @@ from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Book
-from .forms import BookForm, BookSearchForm, ExampleForm
+from .forms import BookForm, BookSearchForm
+from .forms import ExampleForm
 
 # Function-based views with permission decorators
 
@@ -134,6 +135,35 @@ def book_delete(request, pk):
         return redirect('book_list')
     
     return render(request, 'bookshelf/book_confirm_delete.html', {'book': book})
+
+@login_required
+def example_contact(request):
+    """
+    Example view demonstrating the use of ExampleForm.
+    This could be used for a contact page or feedback form.
+    """
+    if request.method == 'POST':
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            # In a real application, you would process the form data here
+            # For example, send an email or save to the database
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+            send_copy = form.cleaned_data.get('send_copy', False)
+            
+            # Process the form data (placeholder for actual implementation)
+            print(f"Form submitted by {name} <{email}>: {message}")
+            if send_copy:
+                print("A copy was requested to be sent to the user.")
+            
+            messages.success(request, 'Thank you for your message! We will get back to you soon.')
+            return redirect('example_contact')
+    else:
+        form = ExampleForm()
+    
+    return render(request, 'bookshelf/example_contact.html', {'form': form})
+
 
 # Class-based views with permission mixins
 
