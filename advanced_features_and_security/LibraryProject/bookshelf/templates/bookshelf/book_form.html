@@ -1,0 +1,95 @@
+{% extends 'bookshelf/base.html' %}
+
+{% block title %}{{ form_title }} - Library System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">{{ form_title }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">Title</label>
+                        <input type="text" class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                               id="id_title" name="title" value="{{ form.title.value|default:'' }}" required>
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.title.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_author" class="form-label">Author</label>
+                        <input type="text" class="form-control {% if form.author.errors %}is-invalid{% endif %}" 
+                               id="id_author" name="author" value="{{ form.author.value|default:'' }}" required>
+                        {% if form.author.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.author.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_publication_year" class="form-label">Publication Year</label>
+                        <input type="date" class="form-control {% if form.publication_year.errors %}is-invalid{% endif %}" 
+                               id="id_publication_year" name="publication_year" 
+                               value="{{ form.publication_year.value|date:'Y-m-d'|default:'' }}" required>
+                        {% if form.publication_year.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.publication_year.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_profile_photo" class="form-label">Cover Image</label>
+                        <input type="file" class="form-control {% if form.profile_photo.errors %}is-invalid{% endif %}" 
+                               id="id_profile_photo" name="profile_photo">
+                        {% if form.profile_photo.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.profile_photo.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                        {% if form.instance.profile_photo %}
+                            <div class="mt-2">
+                                <img src="{{ form.instance.profile_photo.url }}" alt="Current cover" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'book_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}Update{% else %}Create{% endif %} Book
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any additional JavaScript here if needed
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example: Initialize date picker if needed
+        // flatpickr("#id_publication_year", {dateFormat: "Y-m-d"});
+    });
+</script>
+{% endblock %}
