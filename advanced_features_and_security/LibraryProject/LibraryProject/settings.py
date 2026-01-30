@@ -22,10 +22,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-b=4@x1abxs$-vjpr2v8fn!mbb!e7oa3s+7kd0+^h+9g4gdcd!8'
 
+# Security settings
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# Host/domain names that this Django site can serve
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Security middleware settings
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Ensure cookies are only sent over HTTPS
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Prevent client-side JavaScript from accessing the CSRF cookie
+CSRF_USE_SESSIONS = True
+
+# Redirect all non-HTTPS requests to HTTPS
+SECURE_SSL_REDIRECT = True
+
+# Set a reasonable HSTS header (1 year, includeSubDomains, preload)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Prevent MIME type sniffing
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
 # Application definition
@@ -51,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'LibraryProject.urls'
@@ -120,7 +148,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Authentication settings
 LOGIN_REDIRECT_URL = '/relationship_app/books/'
