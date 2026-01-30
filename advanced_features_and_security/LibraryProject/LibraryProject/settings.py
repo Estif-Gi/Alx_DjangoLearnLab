@@ -26,6 +26,9 @@ SECRET_KEY = 'django-insecure-b=4@x1abxs$-vjpr2v8fn!mbb!e7oa3s+7kd0+^h+9g4gdcd!8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+# Tell Django to trust the X-Forwarded-Proto header that comes from our reverse proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Host/domain names that this Django site can serve
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
