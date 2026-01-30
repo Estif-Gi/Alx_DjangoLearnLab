@@ -4,16 +4,67 @@ from django.contrib import messages
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.db.models import Q
+from django.http import Http404
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from .models import Book
+from .forms import BookForm, BookSearchForm
 
 # Function-based views with permission decorators
 
 @login_required
 @permission_required('bookshelf.can_view_book', raise_exception=True)
 def book_list(request):
-    """View for listing all books"""
+    """
+    View for listing books with search and filtering capabilities.
+    Uses parameterized queries to prevent SQL injection.
+    """
+    form = BookSearchForm(request.GET or None)
     books = Book.objects.all()
-    return render(request, 'bookshelf/book_list.html', {'books': books})
+    
+    if form.is_valid():
+        query = form.cleaned_data.get('query')
+        year = form.cleaned_data.get('publication_year')
+        sort_by = form.cleaned_data.get('sort_by', 'title_asc')
+        
+        # Safe search using Q objects and parameterized queries
+        if query:
+            books = books.filter(
+                Q(title__icontains=query) |
+                Q(author__icontains=query)
+            )
+        
+        # Safe filtering by year
+        if year:
+            books = books.filter(publication_year__year=year)
+        
+        # Safe sorting
+        sort_mapping = {
+            'title_asc': 'title',
+            'title_desc': '-title',
+            'author_asc': 'author',
+            'author_desc': '-author',
+            'year_asc': 'publication_year',
+            'year_desc': '-publication_year',
+        }
+        books = books.order_by(sort_mapping.get(sort_by, 'title'))
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(books, 10)  # 10 items per page
+    
+    try:
+        books = paginator.page(page)
+    except PageNotAnInteger:
+        books = paginator.page(1)
+    except EmptyPage:
+        books = paginator.page(paginator.num_pages)
+    
+    return render(request, 'bookshelf/book_list.html', {
+        'books': books,
+        'form': form,
+    })
 
 @login_required
 @permission_required('bookshelf.can_view_book', raise_exception=True)
@@ -25,39 +76,48 @@ def book_detail(request, pk):
 @login_required
 @permission_required('bookshelf.can_create_book', raise_exception=True)
 def book_create(request):
-    """View for creating a new book"""
+    """
+    View for creating a new book.
+    Uses ModelForm for safe data handling and validation.
+    """
     if request.method == 'POST':
-        # In a real implementation, you would use a form here
-        title = request.POST.get('title')
-        author = request.POST.get('author')
-        # ... handle other fields
-        
-        book = Book.objects.create(
-            title=title,
-            author=author,
-            # ... set other fields
-        )
-        messages.success(request, 'Book created successfully!')
-        return redirect('book_detail', pk=book.pk)
+        form = BookForm(request.POST, request.FILES)
+        if form.is_valid():
+            book = form.save(commit=False)
+            book.created_by = request.user
+            book.save()
+            messages.success(request, 'Book created successfully!')
+            return redirect('book_detail', pk=book.pk)
+    else:
+        form = BookForm()
     
-    return render(request, 'bookshelf/book_form.html', {'form_title': 'Create Book'})
+    return render(request, 'bookshelf/book_form.html', {
+        'form': form,
+        'form_title': 'Create Book'
+    })
 
 @login_required
 @permission_required('bookshelf.can_edit_book', raise_exception=True)
 def book_update(request, pk):
-    """View for updating an existing book"""
+    """
+    View for updating an existing book.
+    Uses ModelForm for safe data handling and validation.
+    """
     book = get_object_or_404(Book, pk=pk)
     
     if request.method == 'POST':
-        # In a real implementation, you would use a form here
-        book.title = request.POST.get('title', book.title)
-        book.author = request.POST.get('author', book.author)
-        # ... update other fields
-        book.save()
-        messages.success(request, 'Book updated successfully!')
-        return redirect('book_detail', pk=book.pk)
+        form = BookForm(request.POST, request.FILES, instance=book)
+        if form.is_valid():
+            updated_book = form.save(commit=False)
+            updated_book.updated_by = request.user
+            updated_book.save()
+            messages.success(request, 'Book updated successfully!')
+            return redirect('book_detail', pk=book.pk)
+    else:
+        form = BookForm(instance=book)
     
     return render(request, 'bookshelf/book_form.html', {
+        'form': form,
         'form_title': 'Update Book',
         'book': book
     })

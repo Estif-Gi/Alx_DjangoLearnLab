@@ -54,6 +54,27 @@ SECURE_HSTS_PRELOAD = True
 # Prevent MIME type sniffing
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
+# Content Security Policy (CSP) Settings
+# See: https://django-csp.readthedocs.io/
+CSP_DEFAULT_SRC = ("'none'",)
+CSP_SCRIPT_SRC = ("'self'", 'cdn.jsdelivr.net', 'code.jquery.com')
+CSP_STYLE_SRC = ("'self'", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
+CSP_IMG_SRC = ("'self'", 'data:', 'https:')  # 'data:' is needed for Bootstrap icons
+CSP_FONT_SRC = ("'self'", 'fonts.gstatic.com')
+CSP_CONNECT_SRC = ("'self'",)
+CSP_OBJECT_SRC = ("'none'",)
+CSP_BASE_URI = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'self'",)
+CSP_FORM_ACTION = ("'self'",)
+CSP_INCLUDE_NONCE_IN = ('script-src', 'style-src')
+
+# Allow inline styles (Bootstrap and other libraries might need this)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
+
+# For development, you might need to add these to see CSP violation reports
+# CSP_REPORT_URI = '/csp-violation/'
+# CSP_REPORT_ONLY = True  # Set to False to enforce CSP
+
 
 # Application definition
 
@@ -66,19 +87,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'csp',  # Content Security Policy
     'bookshelf.apps.BookshelfConfig',
     'relationship_app.apps.RelationshipAppConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',  # CSP should be after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'LibraryProject.urls'
