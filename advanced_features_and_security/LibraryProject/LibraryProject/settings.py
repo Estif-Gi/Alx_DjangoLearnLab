@@ -46,34 +46,75 @@ CSRF_USE_SESSIONS = True
 # Redirect all non-HTTPS requests to HTTPS
 SECURE_SSL_REDIRECT = True
 
-# Set a reasonable HSTS header (1 year, includeSubDomains, preload)
-SECURE_HSTS_SECONDS = 31536000  # 1 year
+# HTTP Strict Transport Security (HSTS) settings
+SECURE_HSTS_SECONDS = 31536000  # 1 year in seconds
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
+# ======================
+# Secure Cookies
+# ======================
+SESSION_COOKIE_SECURE = True  # Only send session cookie over HTTPS
+CSRF_COOKIE_SECURE = True     # Only send CSRF cookie over HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+CSRF_COOKIE_HTTPONLY = True     # Additional protection for CSRF cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # Protection against CSRF attacks
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# ======================
+# Security Headers
+# ======================
 # Prevent MIME type sniffing
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
+# Enable browser's XSS filter
+SECURE_BROWSER_XSS_FILTER = True
+
+# Prevent clickjacking attacks
+X_FRAME_OPTIONS = 'DENY'
+
+# Referrer-Policy
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# Content Security Policy (CSP) is configured separately in the CSP settings below
+
+# ======================
 # Content Security Policy (CSP) Settings
 # See: https://django-csp.readthedocs.io/
+# ======================
 CSP_DEFAULT_SRC = ("'none'",)
 CSP_SCRIPT_SRC = ("'self'", 'cdn.jsdelivr.net', 'code.jquery.com')
-CSP_STYLE_SRC = ("'self'", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
+CSP_STYLE_SRC = ("'self'", 'cdn.jsdelivr.net', 'fonts.googleapis.com', "'unsafe-inline")
 CSP_IMG_SRC = ("'self'", 'data:', 'https:')  # 'data:' is needed for Bootstrap icons
-CSP_FONT_SRC = ("'self'", 'fonts.gstatic.com')
+CSP_FONT_SRC = ("'self'", 'fonts.gstatic.com', 'cdn.jsdelivr.net')
 CSP_CONNECT_SRC = ("'self'",)
 CSP_OBJECT_SRC = ("'none'",)
 CSP_BASE_URI = ("'self'",)
-CSP_FRAME_ANCESTORS = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
 CSP_FORM_ACTION = ("'self'",)
 CSP_INCLUDE_NONCE_IN = ('script-src', 'style-src')
 
-# Allow inline styles (Bootstrap and other libraries might need this)
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline", 'cdn.jsdelivr.net', 'fonts.googleapis.com')
+# Report URI for CSP violations (uncomment and set your reporting endpoint)
+# CSP_REPORT_URI = 'https://your-domain.com/csp-violation-collector/'
 
-# For development, you might need to add these to see CSP violation reports
-# CSP_REPORT_URI = '/csp-violation/'
-# CSP_REPORT_ONLY = True  # Set to False to enforce CSP
+# Report-Only mode (set to False to enforce CSP)
+CSP_REPORT_ONLY = False
+
+# ======================
+# Security Middleware
+# ======================
+# Ensure these are in the correct order in MIDDLEWARE
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',  # Should be after SecurityMiddleware
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
+]
 
 
 # Application definition
@@ -92,16 +133,7 @@ INSTALLED_APPS = [
     'relationship_app.apps.RelationshipAppConfig',
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'csp.middleware.CSPMiddleware',  # CSP should be after SecurityMiddleware
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+# Middleware is now defined in the Security Middleware section above
 
 ROOT_URLCONF = 'LibraryProject.urls'
 
